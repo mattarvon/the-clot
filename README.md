@@ -1,21 +1,27 @@
 # BLOODWATER
 
-A horror-styled live shark tracker. Dark sonar ocean chart, snarling pissed-off
-shark markers, blood-drip wordmark. JAWS-inspired in spirit, original art and
-branding (no Universal trademarks — rename freely).
+A horror-styled live shark tracker. **Real satellite imagery** color-graded dark
+and bloody, photoreal (or vector-fallback) shark markers, blood-red migration
+trails, blood-drip wordmark. JAWS-inspired in spirit, original art and branding
+(no Universal trademarks — rename freely).
 
 ## Run it
 
-It's a static site with no build step and no dependencies.
+Static site, no build step. The map pulls satellite tiles and Leaflet from CDNs,
+so it needs an internet connection at runtime, but there's nothing to compile.
 
 ```bash
 # any static server works; pick one
 python3 -m http.server 8000
+npx serve
 # then open http://localhost:8000
 ```
 
-Opening `index.html` directly off the filesystem mostly works too, but a server
-is cleaner (and required if you later switch the scripts to ES modules).
+On Windows with no Python/Node, a self-contained PowerShell dev server with
+live-reload (`serve.ps1`, git-ignored) is handy: `pwsh -File serve.ps1`.
+
+Opening `index.html` directly off the filesystem mostly works, but a server is
+cleaner.
 
 ## Data
 
@@ -51,21 +57,33 @@ Numbers come back as strings on the real feed; `length`/`weight` formatting is
 inconsistent and `tz_datetime` is `"D MMM YYYY H:mm:ss ±ZZZZ"`. The demo pod
 mirrors all of that so render code behaves the same on live data.
 
+## Map & attribution
+
+The basemap is **Esri World Imagery** served through [Leaflet](https://leafletjs.com/)
+(both via CDN, pinned in `index.html`). Tiles are color-graded for the horror look
+in CSS (`.leaflet-tile` filter + `.grade` overlay), not baked in. The required
+attribution credit renders bottom-right. Check Esri's and Leaflet's terms before
+any public/commercial use.
+
+## Shark images
+
+Markers use photoreal PNGs from `assets/sharks/` when present, falling back to a
+built-in vector shark otherwise — see [`assets/sharks/README.md`](assets/sharks/README.md)
+for file naming and image guidelines (top-down, transparent, nose up).
+
 ## Architecture
 
-No bundler. Plain scripts share globals and load in order from `index.html`:
+No bundler. Plain scripts share globals and load in order from `index.html`
+(Leaflet loads first):
 
 | file            | owns                                                        |
 |-----------------|------------------------------------------------------------|
-| `js/geo.js`     | equirectangular projection, viewBox, continent silhouettes |
-| `js/shark.js`   | the snarling shark marker SVG + heading helper             |
+| `js/geo.js`     | month names + legacy equirectangular helpers (map now uses Leaflet) |
+| `js/shark.js`   | vector fallback shark marker SVG + heading helper          |
 | `js/data.js`    | OCEARCH loader, demo pod, schema helpers                   |
 | `js/wordmark.js`| blood-drip title builder                                   |
-| `js/app.js`     | chart render, dossier, controls, boot                      |
-| `css/styles.css`| everything visual, incl. animations + reduced-motion       |
-
-The continents are deliberately loose silhouettes for the sonar-chart look, not
-survey-grade coastlines.
+| `js/app.js`     | Leaflet map, markers + gore, trails, dossier, controls, boot |
+| `css/styles.css`| everything visual, incl. color-grade, animations + reduced-motion |
 
 ## Where to take it
 

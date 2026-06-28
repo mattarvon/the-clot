@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BLOODWATER — shark tracker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -20,7 +22,8 @@
     </div>
 
     <div class="stage" id="stage">
-      <svg class="chart" id="chart" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 500"></svg>
+      <div id="map"></div>
+      <div class="grade"></div>
       <div class="fog"></div>
       <div class="scanline"></div>
       <div class="storm"></div>
@@ -66,7 +69,35 @@
     </div>
   </div>
 
+  <!-- hidden gradient defs so the vector fallback shark stays shaded -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <linearGradient id="gHide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#444b53"/><stop offset="44%" stop-color="#6b737b"/>
+      <stop offset="62%" stop-color="#9aa0a3"/><stop offset="100%" stop-color="#c3c7c4"/>
+    </linearGradient>
+    <linearGradient id="gBelly" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef0ec"/><stop offset="100%" stop-color="#c2c8c2"/>
+    </linearGradient>
+    <linearGradient id="gDorsal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#373d44"/><stop offset="100%" stop-color="#5b626a"/>
+    </linearGradient>
+    <radialGradient id="gSnout" cx="42%" cy="26%" r="68%">
+      <stop offset="0" stop-color="#b3b9b9" stop-opacity=".55"/><stop offset="100%" stop-color="#b3b9b9" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="gGum" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c43350"/><stop offset="100%" stop-color="#7d1020"/>
+    </linearGradient>
+    <radialGradient id="gThroat" cx="60%" cy="42%" r="62%">
+      <stop offset="0" stop-color="#3c0509"/><stop offset="100%" stop-color="#100203"/>
+    </radialGradient>
+    <linearGradient id="gTooth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="100%" stop-color="#d6cfbf"/>
+    </linearGradient>
+  </defs></svg>
+
   <!-- load order matters: shared globals, no bundler -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="js/geo.js"></script>
   <script src="js/shark.js"></script>
   <script src="js/data.js"></script>
