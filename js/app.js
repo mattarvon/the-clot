@@ -37,10 +37,21 @@ function speciesKey(sp) {
   return "default";
 }
 
-// image cascade: per-id -> per-species -> default -> inline SVG shark.
-// Drop files in assets/sharks/ (e.g. white.png, tiger.png, mako.png, default.png,
-// or 1.png for a specific shark). Top-down view, nose pointing up, transparent bg.
-function sharkImgErr(img, hot) {
+// image cascade: per-id -> per-species -> default, each tried across transparent
+// formats, then the inline SVG shark. Drop files in assets/sharks/ (e.g.
+// white.png, tiger.webp, mako.png, default.png, or 1.png for a specific shark).
+// Top-down view, nose pointing up, transparent background.
+const IMG_EXTS = ['png', 'webp', 'gif', 'svg'];   // JPG omitted: no transparency
+const _imgResolved = {};   // shark id -> working url, or '' once we know it's SVG-fallback
+
+function svgFallbackHTML(hot) {
+  return `<div class="svgfallback"><svg viewBox="-70 -42 140 84" width="100%" height="100%">${sharkSVG(1, !!hot)}</svg></div>`;
+}
+function sharkImgOk(img) {
+  const id = img.getAttribute('data-id');
+  if (id != null) _imgResolved[id] = img.getAttribute('src');
+}
+function sharkImgErr(img) {
   let list = [];
   try { list = JSON.parse(img.getAttribute('data-fallback') || '[]'); } catch (e) {}
   if (list.length) {
@@ -48,21 +59,34 @@ function sharkImgErr(img, hot) {
     img.setAttribute('data-fallback', JSON.stringify(list));
     return;
   }
+  const id = img.getAttribute('data-id');
+  const hot = img.getAttribute('data-hot') === '1';
+  if (id != null) _imgResolved[id] = '';
   const wrap = document.createElement('div');
   wrap.className = 'svgfallback';
-  wrap.innerHTML = `<svg viewBox="-70 -42 140 84" width="100%" height="100%">${sharkSVG(1, !!hot)}</svg>`;
+  wrap.innerHTML = `<svg viewBox="-70 -42 140 84" width="100%" height="100%">${sharkSVG(1, hot)}</svg>`;
   img.replaceWith(wrap);
 }
 
 function markerHTML(s, hot, head) {
-  const key = speciesKey(s.species);
-  const srcs = [`assets/sharks/${s.id}.png`, `assets/sharks/${key}.png`, `assets/sharks/default.png`];
+  const cached = _imgResolved[s.id];
+  let inner;
+  if (cached === '') {
+    inner = svgFallbackHTML(hot);                       // known: no image, use vector
+  } else if (typeof cached === 'string') {
+    inner = `<img class="sphoto" style="--rot:${head.toFixed(0)}deg" src="${cached}" alt="">`;
+  } else {
+    const key = speciesKey(s.species);
+    const srcs = [];
+    [String(s.id), key, 'default'].forEach(b => IMG_EXTS.forEach(e => srcs.push(`assets/sharks/${b}.${e}`)));
+    inner = `<img class="sphoto" style="--rot:${head.toFixed(0)}deg" src="${srcs[0]}"
+           data-fallback='${JSON.stringify(srcs.slice(1))}' data-id="${s.id}" data-hot="${hot ? 1 : 0}"
+           onload="sharkImgOk(this)" onerror="sharkImgErr(this)" alt="">`;
+  }
   return `
     <div class="sbody">
       <div class="chum"></div>
-      <img class="sphoto" style="--rot:${head.toFixed(0)}deg" src="${srcs[0]}"
-           data-fallback='${JSON.stringify(srcs.slice(1))}'
-           onerror="sharkImgErr(this,${hot ? 1 : 0})" alt="">
+      ${inner}
       ${hot ? '<span class="drip"></span>' : ''}
       <span class="pulse" style="--pc:${hot ? '#e6201c' : '#2fb6b6'}"></span>
     </div>

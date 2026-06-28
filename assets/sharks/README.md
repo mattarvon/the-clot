@@ -6,19 +6,22 @@ so the app always works.
 
 ## File names (most specific wins)
 
-For each shark the app looks for, in order:
+For each shark the app looks for, in order (each name is tried as `.png`, `.webp`,
+`.gif`, then `.svg`):
 
-1. `assets/sharks/<id>.png`        — one specific shark (e.g. `1.png` = Mary Lee)
-2. `assets/sharks/<species>.png`   — `white.png`, `tiger.png`, `mako.png`
-3. `assets/sharks/default.png`     — catch-all
-4. built-in vector shark           — if none of the above load
+1. `assets/sharks/<id>.*`        — one specific shark (e.g. `1.png` = Mary Lee)
+2. `assets/sharks/<species>.*`   — `white.*`, `tiger.*`, `mako.*`
+3. `assets/sharks/default.*`     — catch-all
+4. built-in vector shark         — if none of the above load
 
-The quickest win: add **`white.png`**, **`tiger.png`**, **`mako.png`** (the demo pod
-is mostly white sharks).
+The quickest win: add **`white`**, **`tiger`**, **`mako`** (the demo pod is mostly
+white sharks).
 
 ## Image guidelines
 
-- **Format:** PNG with a **transparent background** (cut out, no sea/sky).
+- **Format:** PNG, WebP, GIF, or SVG — anything with a **transparent background**
+  (cut out, no sea/sky). **Not JPG** — it can't do transparency, so it'd show as a
+  rectangular tile.
 - **View:** **top-down** (looking straight down at the shark from above). The marker
   is rotated to point along the shark's direction of travel, so a top-down body
   reads correctly as it turns. Side-view photos will look tilted when rotated.
