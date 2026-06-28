@@ -14,8 +14,12 @@ async function loadTornadoWarnings() {
   if (!r.ok) throw new Error("nws " + r.status);
   const j = await r.json();
   return (j.features || []).filter(f => f.geometry && f.geometry.type === "Polygon").map(f => {
-    const ring = f.geometry.coordinates[0];
-    return { area: f.properties.areaDesc || "", ll: tornCentroid(ring), ring: ring.map(c => [c[1], c[0]]) };
+    const p = f.properties || {}, ring = f.geometry.coordinates[0];
+    return {
+      area: p.areaDesc || "", ll: tornCentroid(ring), ring: ring.map(c => [c[1], c[0]]),
+      headline: p.headline, desc: p.description, instr: p.instruction,
+      expires: p.expires, sender: p.senderName, severity: p.severity,
+    };
   });
 }
 
@@ -27,7 +31,7 @@ function parseSPC(text) {
     if (p.length < 7) return null;
     const lat = +p[5], lon = +p[6];
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-    return { time: p[0], f: p[1], loc: p[2], state: p[4], lat, lon };
+    return { time: p[0], f: p[1], loc: p[2], county: p[3], state: p[4], lat, lon, comments: p.slice(7).join(",") };
   }).filter(Boolean);
 }
 async function loadTornadoReports() {
@@ -63,11 +67,31 @@ function plotTorn(warnings, reports) {
   warnings.forEach(w => {
     L.polygon(w.ring, { color: "#e6201c", weight: 1.5, fill: false, dashArray: "4 3" }).addTo(tornadoLayer);
     L.marker(w.ll, { icon: L.divIcon({ className: "tornado active", html: funnelSVG(true), iconSize: [28, 46], iconAnchor: [14, 44] }) })
-      .bindTooltip(`<b>Tornado Warning</b><br>${w.area}`, { className: "telem-tip", direction: "top" }).addTo(tornadoLayer);
+      .bindTooltip(`<b>Tornado Warning</b><br>${w.area}`, { className: "telem-tip", direction: "top" })
+      .on("click", () => inspect({
+        kind: "Tornado Warning · NWS", title: w.headline || "Tornado Warning",
+        rows: [
+          { k: "Area", v: w.area, full: true },
+          { k: "Severity", v: w.severity },
+          { k: "Expires", v: w.expires ? new Date(w.expires).toLocaleString() : null },
+          { k: "Office", v: w.sender, full: true },
+          { k: "Details", v: w.desc, full: true },
+          { k: "Action", v: w.instr, full: true },
+        ], lat: w.ll[0], lon: w.ll[1],
+      })).addTo(tornadoLayer);
   });
   reports.forEach(r => {
     L.marker([r.lat, r.lon], { icon: L.divIcon({ className: "tornado", html: funnelSVG(false), iconSize: [22, 38], iconAnchor: [11, 36] }) })
-      .bindTooltip(`Tornado ${r.f === "UNK" ? "EF?" : "EF" + r.f} · ${r.loc}, ${r.state}`, { className: "telem-tip", direction: "top" }).addTo(tornadoLayer);
+      .bindTooltip(`Tornado ${r.f === "UNK" ? "EF?" : "EF" + r.f} · ${r.loc}, ${r.state}`, { className: "telem-tip", direction: "top" })
+      .on("click", () => inspect({
+        kind: "Tornado report · SPC", title: `${r.loc}, ${r.state}`,
+        rows: [
+          { k: "Rating", v: r.f === "UNK" ? "EF-unknown" : "EF" + r.f, color: "#e69a2f" },
+          { k: "County", v: r.county },
+          { k: "Time (UTC)", v: r.time },
+          { k: "Notes", v: r.comments, full: true },
+        ], lat: r.lat, lon: r.lon,
+      })).addTo(tornadoLayer);
   });
 }
 

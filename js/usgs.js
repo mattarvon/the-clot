@@ -16,6 +16,9 @@ async function loadQuakes() {
       time: f.properties.time,
       lon: f.geometry.coordinates[0],
       lat: f.geometry.coordinates[1],
+      depth: f.geometry.coordinates[2],
+      felt: f.properties.felt,
+      tsunami: f.properties.tsunami,
       url: f.properties.url,
     }))
     .filter(q => q.mag != null && Number.isFinite(q.lat))

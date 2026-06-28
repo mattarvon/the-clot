@@ -233,6 +233,24 @@ body{
   overflow:hidden;
 }
 .dossier.open{transform:translateX(0)}
+/* universal inspector panel — same slot/skin as the dossier */
+.inspector{
+  position:absolute;top:14px;right:14px;z-index:7;width:320px;max-width:calc(100% - 28px);
+  max-height:calc(100% - 28px);overflow-y:auto;
+  background:linear-gradient(180deg,#0b1922,#081218);
+  border:1px solid #1d3a44;border-left:3px solid var(--blood);
+  border-radius:3px;box-shadow:0 24px 60px rgba(0,0,0,.6);
+  transform:translateX(120%);transition:transform .32s cubic-bezier(.2,.7,.2,1);
+}
+.inspector.open{transform:translateX(0)}
+.inspector .x{position:absolute;top:9px;right:11px;z-index:3;cursor:pointer;color:var(--bone);
+  font-size:20px;line-height:1;border:0;background:rgba(6,10,14,.5);border-radius:50%;
+  width:24px;height:24px;text-shadow:0 1px 2px #000}
+.inspector .x:hover{color:var(--artery)}
+.inspector .cell .v{word-break:break-word}
+.ipos{font-variant-numeric:tabular-nums;color:#5f7178}
+.footer a{color:#7a929a;text-decoration:none}
+.footer a:hover{color:var(--artery)}
 /* case-file portrait banner (hidden until an image loads) */
 .dphoto{display:none;width:100%;height:140px;object-fit:cover;object-position:center 38%;
   filter:saturate(1.05) contrast(1.06) brightness(.94);

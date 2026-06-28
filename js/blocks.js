@@ -22,7 +22,9 @@ async function loadHazards() {
     const co = g.coordinates || [];
     return {
       type: p.eventtype, alert: p.alertlevel, name: p.name || p.eventname,
-      country: p.country, from: p.fromdate, lat: co[1], lon: co[0],
+      country: p.country, from: p.fromdate, modified: p.datemodified, lat: co[1], lon: co[0],
+      sev: p.severitydata && p.severitydata.severitytext,
+      url: (p.url && (p.url.report || p.url.details)) || null,
     };
   }).filter(e => Number.isFinite(e.lat));
 }
@@ -43,7 +45,18 @@ function plotHaz(events) {
     const c = alertColor(e.alert), r = e.alert === "Red" ? 7 : e.alert === "Orange" ? 5 : 4;
     L.circleMarker([e.lat, e.lon], { radius: r, color: c, weight: 1.4, fillColor: c, fillOpacity: .22 })
       .bindTooltip(`<b>${HAZ_TYPE[e.type] || e.type}</b> · ${e.alert}<br>${e.name || e.country || ""}`,
-        { className: "telem-tip", direction: "top" }).addTo(hazLayer);
+        { className: "telem-tip", direction: "top" })
+      .on("click", () => inspect({
+        kind: (HAZ_TYPE[e.type] || e.type) + " · GDACS", title: e.name || e.country || "Hazard",
+        rows: [
+          { k: "Alert level", v: e.alert, color: c },
+          { k: "Type", v: HAZ_TYPE[e.type] || e.type },
+          { k: "Country", v: e.country, full: true },
+          { k: "Severity", v: e.sev, full: true },
+          { k: "From", v: (e.from || "").slice(0, 10) },
+          { k: "Updated", v: (e.modified || "").slice(0, 10) },
+        ], lat: e.lat, lon: e.lon, link: e.url, linkLabel: "GDACS report ↗",
+      })).addTo(hazLayer);
   });
 }
 
@@ -104,8 +117,9 @@ async function loadSightings() {
   const tk = SHARK_TAXA.map(k => "taxon_key=" + k).join("&");
   const j = await (await fetch(`https://api.gbif.org/v1/occurrence/search?${tk}&hasCoordinate=true&year=2020,2026&limit=60`)).json();
   return (j.results || []).map(x => ({
-    sp: x.species || x.scientificName, lat: x.decimalLatitude, lon: x.decimalLongitude,
-    date: (x.eventDate || "").slice(0, 10), c: x.countryCode,
+    sp: x.species || x.scientificName, sci: x.scientificName, lat: x.decimalLatitude, lon: x.decimalLongitude,
+    date: (x.eventDate || "").slice(0, 10), c: x.countryCode, basis: x.basisOfRecord, key: x.key,
+    locality: x.locality, dataset: x.datasetName,
   })).filter(s => Number.isFinite(s.lat));
 }
 function abbr(sp) { return (sp || "shark").replace(/^(\w)\w+\s+/, "$1. "); }
@@ -122,7 +136,19 @@ function plotSight(rows) {
   sightLayer.clearLayers();
   rows.forEach(s => {
     L.circleMarker([s.lat, s.lon], { radius: 2.6, stroke: false, fillColor: "#bd0a13", fillOpacity: .55 })
-      .bindTooltip(`${s.sp || "shark"} · ${s.date || ""}`, { className: "telem-tip", direction: "top" }).addTo(sightLayer);
+      .bindTooltip(`${s.sp || "shark"} · ${s.date || ""}`, { className: "telem-tip", direction: "top" })
+      .on("click", () => inspect({
+        kind: "Shark sighting · GBIF", title: s.sp || "Shark",
+        rows: [
+          { k: "Species", v: s.sci || s.sp, full: true },
+          { k: "Date", v: s.date },
+          { k: "Country", v: s.c },
+          { k: "Locality", v: s.locality, full: true },
+          { k: "Record type", v: s.basis },
+          { k: "Dataset", v: s.dataset, full: true },
+        ], lat: s.lat, lon: s.lon,
+        link: s.key ? `https://www.gbif.org/occurrence/${s.key}` : null, linkLabel: "GBIF record ↗",
+      })).addTo(sightLayer);
   });
 }
 

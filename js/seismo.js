@@ -95,6 +95,17 @@ function plotQuakes() {
     const c = magColor(q.mag), r = 2 + Math.max(q.mag, 0) * 1.4;
     L.circleMarker([q.lat, q.lon], { radius: r, color: c, weight: 1, fillColor: c, fillOpacity: .3 })
       .bindTooltip(`M${q.mag.toFixed(1)} · ${q.place}`, { className: "telem-tip", direction: "top" })
+      .on("click", () => inspect({
+        kind: "Earthquake · USGS", title: "M " + q.mag.toFixed(1),
+        rows: [
+          { k: "Location", v: q.place, full: true },
+          { k: "Magnitude", v: q.mag.toFixed(1), color: c },
+          { k: "Depth", v: q.depth != null ? q.depth.toFixed(1) + " km" : null },
+          { k: "Time", v: new Date(q.time).toLocaleString() },
+          { k: "Felt reports", v: q.felt || null },
+          { k: "Tsunami flag", v: q.tsunami ? "YES" : null, color: "#e6201c" },
+        ], lat: q.lat, lon: q.lon, link: q.url, linkLabel: "USGS event ↗",
+      }))
       .addTo(quakeLayer);
   });
 }

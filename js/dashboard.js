@@ -25,6 +25,17 @@ function plotTides(rows) {
     L.circleMarker([s.lat, s.lon], { radius: 5, color: c, weight: 1.5, fillColor: c, fillOpacity: .35 })
       .bindTooltip(`<b>${s.name}</b><br>${s.value.toFixed(2)} ft ${arrow(s.trend)} ${s.trend > 0 ? "flooding" : "ebbing"}`,
         { className: "telem-tip", direction: "top" })
+      .on("click", () => inspect({
+        kind: "Tide gauge · NOAA CO-OPS", title: s.name,
+        rows: [
+          { k: "Water level", v: s.value.toFixed(2) + " ft", color: c },
+          { k: "State", v: s.trend > 0.03 ? "Flooding ▲" : s.trend < -0.03 ? "Ebbing ▼" : "Slack water", color: c },
+          { k: "Change / hr", v: (s.trend >= 0 ? "+" : "") + s.trend.toFixed(2) + " ft" },
+          { k: "Station ID", v: s.id },
+          { k: "Reading time", v: s.t, full: true },
+        ], lat: s.lat, lon: s.lon,
+        link: `https://tidesandcurrents.noaa.gov/stationhome.html?id=${s.id}`, linkLabel: "NOAA station ↗",
+      }))
       .addTo(tideLayer);
   });
 }
@@ -63,6 +74,13 @@ function plotAir(rows) {
   rows.forEach(s => {
     L.circleMarker([s.lat, s.lon], { radius: 3, stroke: false, fillColor: pmColor(s.pm), fillOpacity: .8 })
       .bindTooltip(`${s.name || "sensor"}: ${s.pm.toFixed(1)} µg/m³`, { className: "telem-tip", direction: "top" })
+      .on("click", () => inspect({
+        kind: "Air sensor · PurpleAir", title: s.name || "Sensor",
+        rows: [
+          { k: "PM2.5", v: s.pm.toFixed(1) + " µg/m³", color: pmColor(s.pm) },
+          { k: "AQI band", v: pmCategory(s.pm), color: pmColor(s.pm) },
+        ], lat: s.lat, lon: s.lon,
+      }))
       .addTo(airLayer);
   });
 }
