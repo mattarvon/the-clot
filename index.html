@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BLOODWATER — shark tracker</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <div class="mark" id="mark"></div>
+        <div class="tag">They know you're in the water</div>
+      </div>
+      <div class="status">
+        <span class="chip" id="feed"><span class="dot"></span><span id="feedtxt">Acquiring feed</span></span>
+        <span class="chip count">Sharks in the water&nbsp;<b id="num">0</b></span>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <svg class="chart" id="chart" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1000 500"></svg>
+      <div class="scanline"></div>
+      <div class="vignette"></div>
+      <div class="hint" id="hint">Select a shark</div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label for="sp">Species</label>
+          <select id="sp"><option value="*">All</option></select>
+        </div>
+        <div class="ctl">
+          <span class="sw on" id="swTrack"></span><label for="swTrack">Blood trails</label>
+        </div>
+        <div class="ctl">
+          <span class="sw" id="swRecent"></span><label for="swRecent">Recent kills only</label>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div><i></i>Surface ping trail</div>
+        <div class="frag">Tags only transmit when the fin breaks the surface. Gaps mean it went deep.</div>
+      </div>
+
+      <div class="dossier" id="dossier">
+        <div class="dh">
+          <button class="x" id="dx">&times;</button>
+          <div class="sp" id="d-sp"></div>
+          <h2 id="d-name"></h2>
+        </div>
+        <div class="grid">
+          <div class="cell"><div class="k">Length</div><div class="v" id="d-len"></div></div>
+          <div class="cell"><div class="k">Weight</div><div class="v" id="d-wt"></div></div>
+          <div class="cell"><div class="k">Sex</div><div class="v" id="d-sex"></div></div>
+          <div class="cell"><div class="k">Stage</div><div class="v" id="d-stage"></div></div>
+          <div class="cell full"><div class="k">Tagged</div><div class="v" id="d-tag"></div></div>
+          <div class="cell full"><div class="k">Last surfaced</div><div class="v warn" id="d-last"></div></div>
+          <div class="cell"><div class="k">Pings</div><div class="v" id="d-pings"></div></div>
+          <div class="cell"><div class="k">Last position</div><div class="v" id="d-pos"></div></div>
+        </div>
+        <div class="footer" id="d-foot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- load order matters: shared globals, no bundler -->
+  <script src="js/geo.js"></script>
+  <script src="js/shark.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/wordmark.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

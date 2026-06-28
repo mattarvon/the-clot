@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+dist/
+*.log
+.env
+.vscode/
+.idea/
+
+# local dev tooling (not part of the project)
+serve.ps1
